@@ -9,6 +9,10 @@ const userController = require('../controllers/user')
 // /user/signup
 router.post('/signup', userController.signup)
 
+// user login route
+// /user/login
+router.post('/login', userController.login)
+
 // email verification route
 // /user/verify/:id/:token
 router.get('/verify/:id/:token', userController.verifyEmail)

@@ -6,7 +6,7 @@ const Token = require('../models/tocken')
 const bcrypt = require('bcryptjs')
 
 // import jwt
-// const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken')
 
 // import email facility
 const emailSend = require('../util/send_email')
@@ -97,6 +97,50 @@ exports.signup = (req, res, next) => {
       }
     }
   })
+}
+
+// login middleware
+exports.login = (req, res, next) => {
+  const loginData = {
+    email: req.body.email,
+    password: req.body.password
+  }
+
+  User.findOne({ email: loginData.email }).then(data => {
+    if (data) {
+      // compare password if a user exist with the given email
+      bcrypt.compare(
+        loginData.password,
+        data.password,
+        (err, isMatch) => {
+          if (err) {
+            res.json({ message: 'error found while finding user' })
+          } else if (!isMatch) {
+            res.json({ message: 'wrong password' })
+          } else {
+            // create jwt token
+            const jwtSecretKey = process.env.JWT_SECRET_KEY
+            const tokenData = {
+              time: Date(),
+              userId: data.id
+            }
+
+            // generate token
+            const token = jwt.sign(tokenData, jwtSecretKey)
+            res.json({ jwtToken: token, message: 'user logged in', loggedIn: true })
+          }
+        }
+      )
+    } else {
+      res.json({ message: 'email not exist', loggedIn: false })
+    }
+  })
+    .catch(err => {
+      if (err) {
+        console.log(err)
+        res.json({ message: 'error occured while finding user data', loggedIn: false })
+      }
+    })
 }
 
 // to verify email id
