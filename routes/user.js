@@ -9,5 +9,9 @@ const userController = require('../controllers/user')
 // /user/signup
 router.post('/signup', userController.signup)
 
+// email verification route
+// /user/verify/:id/:token
+router.get('/verify/:id/:token', userController.verifyEmail)
+
 // export the router
 module.exports = router
