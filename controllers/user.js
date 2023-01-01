@@ -147,6 +147,7 @@ exports.login = (req, res, next) => {
 exports.verifyEmail = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.params.id })
+    console.log(`user: ${user}`)
     if (!user) return res.status(400).send('Invalid link')
 
     // check is it a valid user id
@@ -155,11 +156,14 @@ exports.verifyEmail = async (req, res, next) => {
       token: req.params.token
     })
 
+    console.log(`token: ${token}`)
+
     if (!token) return res.status(400).send('Invalid link')
 
-    await User.updateOne({ _id: user._id, verified: true })
+    await User.updateOne({ _id: user._id }, { user_verified: true })
+    console.log('reached')
     await Token.findByIdAndRemove(token._id)
-
+    console.log('completed')
     res.send('email verified sucessfully')
   } catch (error) {
     res.status(400).send('An error occured')
