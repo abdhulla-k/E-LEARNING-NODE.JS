@@ -118,16 +118,20 @@ exports.login = (req, res, next) => {
           } else if (!isMatch) {
             res.json({ message: 'wrong password' })
           } else {
-            // create jwt token
-            const jwtSecretKey = process.env.JWT_SECRET_KEY
-            const tokenData = {
-              time: Date(),
-              userId: data.id
-            }
+            if (data.user_verified === true) {
+              // create jwt token
+              const jwtSecretKey = process.env.JWT_SECRET_KEY
+              const tokenData = {
+                time: Date(),
+                userId: data.id
+              }
 
-            // generate token
-            const token = jwt.sign(tokenData, jwtSecretKey)
-            res.json({ jwtToken: token, message: 'user logged in', loggedIn: true })
+              // generate token
+              const token = jwt.sign(tokenData, jwtSecretKey)
+              res.json({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 1000 * 60 })
+            } else {
+              res.json({ message: 'please verify your email' })
+            }
           }
         }
       )
