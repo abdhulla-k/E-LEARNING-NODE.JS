@@ -31,10 +31,12 @@ app.use(express.json())
 // import routers
 const homeRoutes = require('./routes/home')
 const userRoutes = require('./routes/user')
+const instructorRoutes = require('./routes/instructor')
 
 // enable routing
 app.use('/', homeRoutes) // home routes
 app.use('/user', userRoutes) // users related routes
+app.use('/instructor', instructorRoutes)
 
 // connect with database
 mongoose.connect('mongodb://localhost:27017/newApplication').then(data => {

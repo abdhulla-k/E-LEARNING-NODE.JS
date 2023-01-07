@@ -128,7 +128,7 @@ exports.login = (req, res, next) => {
 
               // generate token
               const token = jwt.sign(tokenData, jwtSecretKey)
-              res.json({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 1000 * 60 })
+              res.json({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 10000000 })
             } else {
               res.json({ message: 'please verify your email' })
             }
@@ -152,7 +152,8 @@ exports.verifyEmail = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.params.id })
     console.log(`user: ${user}`)
-    if (!user) return res.status(400).send('Invalid link')
+    if (!user) return res.json({ message: 'Invalid user', status: false })
+    // if (!user) return res.status(400).send({ message: 'Invalid user', status: false })
 
     // check is it a valid user id
     const token = await Token.findOne({
@@ -162,14 +163,15 @@ exports.verifyEmail = async (req, res, next) => {
 
     console.log(`token: ${token}`)
 
-    if (!token) return res.status(400).send('Invalid link')
+    if (!user) return res.json({ message: 'Invalid user', status: false })
 
     await User.updateOne({ _id: user._id }, { user_verified: true })
     console.log('reached')
     await Token.findByIdAndRemove(token._id)
     console.log('completed')
-    res.send('email verified sucessfully')
+    res.send({ message: 'email verified sucessfully', status: true })
   } catch (error) {
-    res.status(400).send('An error occured')
+    // res.status(400).send({ message: 'An error occured', status: false })
+    res.json({ message: 'An error occured', status: false })
   }
 }
