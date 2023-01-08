@@ -72,7 +72,7 @@ module.exports.singup = (req, res, next) => {
                       emailSend(
                         createdData.email,
                         'successfully created your account.please verify',
-                        `${process.env.BASE_URL}${createdData.id}/${token.token}`)
+                        `${process.env.BASE_URL_INST}${createdData.id}/${token.token}`)
                         .then(status => {
                           // send response
                           res.json({
@@ -105,6 +105,35 @@ module.exports.singup = (req, res, next) => {
     })
   } catch {
     console.log('error')
+  }
+}
+
+// to verify email id
+exports.verifyEmail = async (req, res, next) => {
+  try {
+    const user = await Instructor.findOne({ _id: req.params.id })
+    console.log(`user: ${user}`)
+    if (!user) return res.json({ message: 'Invalid user', status: false })
+    // if (!user) return res.status(400).send({ message: 'Invalid user', status: false })
+
+    // check is it a valid user id
+    const token = await Token.findOne({
+      userId: user._id,
+      token: req.params.token
+    })
+
+    console.log(`token: ${token}`)
+
+    if (!user) return res.json({ message: 'Invalid user', status: false })
+
+    await Instructor.updateOne({ _id: user._id }, { user_verified: true })
+    console.log('reached')
+    await Token.findByIdAndRemove(token._id)
+    console.log('completed')
+    res.send({ message: 'email verified sucessfully', status: true })
+  } catch (error) {
+    // res.status(400).send({ message: 'An error occured', status: false })
+    res.json({ message: 'An error occured', status: false })
   }
 }
 
