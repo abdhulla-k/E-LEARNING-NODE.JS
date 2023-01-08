@@ -15,11 +15,16 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
-  user_verified: {
+  userVerified: {
     type: Boolean,
     required: true,
+    default: false
+  },
+  adminApprouved: {
+    type: Boolean,
+    require: true,
     default: false
   }
 })
 
-module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('Instructor', userSchema)
