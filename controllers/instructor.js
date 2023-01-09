@@ -122,14 +122,11 @@ exports.verifyEmail = async (req, res, next) => {
       token: req.params.token
     })
 
-    console.log(`token: ${token}`)
-
+    // if there is no user exist
     if (!user) return res.json({ message: 'Invalid user', status: false })
 
-    await Instructor.updateOne({ _id: user._id }, { user_verified: true })
-    console.log('reached')
+    await Instructor.updateOne({ _id: user._id }, { userVerified: true })
     await Token.findByIdAndRemove(token._id)
-    console.log('completed')
     res.send({ message: 'email verified sucessfully', status: true })
   } catch (error) {
     // res.status(400).send({ message: 'An error occured', status: false })
@@ -156,7 +153,7 @@ module.exports.login = (req, res, next) => {
           } else if (!isMatch) {
             res.json({ message: 'wrong password' })
           } else {
-            if (data.user_verified === true) {
+            if (data.userVerified === true) {
               // create jwt token
               const jwtSecretKey = process.env.JWT_SECRET_KEY
               const tokenData = {

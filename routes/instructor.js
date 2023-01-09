@@ -7,6 +7,9 @@ const instructorController = require('../controllers/instructor')
 // instructor signup
 router.post('/signup', instructorController.singup)
 
+// to verify email
+router.get('/verify/:id/:token', instructorController.verifyEmail)
+
 // to login user
 router.post('/login', instructorController.login)
 
