@@ -1,6 +1,20 @@
 // import models
 const Instructor = require('../models/instructor')
 const Token = require('../models/tocken')
+const Course = require('../models/courses')
+
+// import multer
+const multer = require('multer')
+const storageo = multer.diskStorage({
+  // set the destination to save the files
+  destination: (req, fiel, callback) => {
+    callback(null, './public/images/')
+  },
+  filename: (req, file, callback) => {
+    const uniqueName = `${Date.now()}_${file.originalname}`
+    callback(null, uniqueName)
+  }
+})
 
 // import bcrypt
 const bcrypt = require('bcryptjs')
@@ -23,8 +37,6 @@ module.exports.singup = (req, res, next) => {
       email: req.body.email,
       password: req.body.password
     }
-
-    console.log(signupData)
 
     // set salt round to bcrypt the password
     const saltRound = 10
@@ -180,4 +192,46 @@ module.exports.login = (req, res, next) => {
         res.json({ message: 'error occured while finding instructor data', loggedIn: false })
       }
     })
+}
+
+// create course
+// furst one is to save the image
+module.exports.upload = multer({ storage: storageo }).single('image')
+// second one is to create the course
+module.exports.createCourse = async (req, res, next) => {
+  // get the course data
+  const courseData = {
+    title: req.body.title,
+    description: req.body.description,
+    imgPath: req.file.path,
+    imgName: req.file.filename
+  }
+
+  // create mongodb instance
+  const course = new Course({
+    ...courseData
+  })
+
+  // expecting an error while saving the data.
+  // so use try catch
+  try {
+    // save the data
+    const courseStatus = await course.save()
+    if (courseStatus) {
+      // return the data and status
+      res.json({
+        message: 'success fully created',
+        status: true,
+        courseDetails: {
+          ...courseStatus
+        }
+      })
+    }
+  } catch {
+    // send error status
+    res.json({
+      message: 'error occured while creating course! try again later',
+      status: false
+    })
+  }
 }

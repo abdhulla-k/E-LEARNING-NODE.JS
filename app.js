@@ -1,6 +1,9 @@
 // import express
 const express = require('express')
 
+// import path module
+const path = require('path')
+
 // import cors
 const cors = require('cors')
 
@@ -18,6 +21,9 @@ const app = express()
 
 // Set up Global configuration access for dotenv
 dotenv.config()
+
+// set public path
+app.use(express.static(path.join(__dirname, 'public')))
 
 // configuring cors
 const corsOptions = {
