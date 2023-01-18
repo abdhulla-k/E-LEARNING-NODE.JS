@@ -1,6 +1,7 @@
 // import models
 const User = require('../models/users')
 const Token = require('../models/tocken')
+const Course = require('../models/courses')
 
 // import bcrypt
 const bcrypt = require('bcryptjs')
@@ -149,9 +150,11 @@ exports.login = (req, res, next) => {
 
 // to verify email id
 exports.verifyEmail = async (req, res, next) => {
+  // expecting an error while verifying email
   try {
+    // get user data with the id provided in link
     const user = await User.findOne({ _id: req.params.id })
-    console.log(`user: ${user}`)
+    // send error message if there is no user
     if (!user) return res.json({ message: 'Invalid user', status: false })
     // if (!user) return res.status(400).send({ message: 'Invalid user', status: false })
 
@@ -161,17 +164,35 @@ exports.verifyEmail = async (req, res, next) => {
       token: req.params.token
     })
 
-    console.log(`token: ${token}`)
-
     if (!user) return res.json({ message: 'Invalid user', status: false })
 
+    // user exist. so
+    // verify user
     await User.updateOne({ _id: user._id }, { user_verified: true })
-    console.log('reached')
+
+    // delete the token from collection
     await Token.findByIdAndRemove(token._id)
-    console.log('completed')
+
+    // send success message
     res.send({ message: 'email verified sucessfully', status: true })
   } catch (error) {
     // res.status(400).send({ message: 'An error occured', status: false })
     res.json({ message: 'An error occured', status: false })
+  }
+}
+
+// send the courses to frontend
+module.exports.getCourses = async (req, res, next) => {
+  // expect error while fetching data
+  try {
+    // get the index to skip data while fetching
+    const index = req.params.index
+    // get the course details
+    const courses = await Course.find({}).skip(index * 10)
+    // send it to instructor
+    res.json(courses)
+  } catch {
+    // send error message
+    res.json({ message: 'error while fetching data' })
   }
 }
