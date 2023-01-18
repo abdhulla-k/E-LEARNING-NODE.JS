@@ -321,3 +321,19 @@ module.exports.createModule = async (req, res, next) => {
     res.json({ message: 'error while saveing the module' })
   }
 }
+
+// send the courses to frontend
+module.exports.getCourses = async (req, res, next) => {
+  // expect error while fetching data
+  try {
+    // get the index to skip data while fetching
+    const index = req.params.index
+    // get the course details
+    const courses = await Course.find({}).skip(index * 10)
+    // send it to instructor
+    res.json(courses)
+  } catch {
+    // send error message
+    res.json({ message: 'error while fetching data' })
+  }
+}

@@ -26,7 +26,7 @@ dotenv.config()
 app.use(express.static(path.join(__dirname, 'public')))
 // Function to serve all static files
 // inside public directory.
-app.use('/images', express.static('images'))
+app.use('/public', express.static('public'))
 
 // configuring cors
 const corsOptions = {

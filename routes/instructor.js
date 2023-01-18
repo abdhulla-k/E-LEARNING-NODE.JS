@@ -23,4 +23,7 @@ router.post('/:courseId/module',
   instructorController.createModule
 )
 
+// to get course details
+router.get('/getCourses/:index', instructorController.getCourses)
+
 module.exports = router
