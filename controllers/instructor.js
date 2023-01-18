@@ -5,10 +5,24 @@ const Course = require('../models/courses')
 
 // import multer
 const multer = require('multer')
+
+// multer path and disk setted for saving the image while creating the course
 const storageo = multer.diskStorage({
   // set the destination to save the files
   destination: (req, fiel, callback) => {
     callback(null, './public/images/')
+  },
+  filename: (req, file, callback) => {
+    const uniqueName = `${Date.now()}_${file.originalname}`
+    callback(null, uniqueName)
+  }
+})
+
+// multer path and disk setted for saving the files of module while adding module
+const moduleStorage = multer.diskStorage({
+  // set the destination to save the files
+  destination: (req, fiel, callback) => {
+    callback(null, './public/modules/')
   },
   filename: (req, file, callback) => {
     const uniqueName = `${Date.now()}_${file.originalname}`
@@ -204,7 +218,9 @@ module.exports.createCourse = async (req, res, next) => {
     title: req.body.title,
     description: req.body.description,
     imgPath: req.file.path,
-    imgName: req.file.filename
+    imgName: req.file.filename,
+    price: req.body.price,
+    teacher: req.body.teacher
   }
 
   // create mongodb instance
@@ -222,6 +238,7 @@ module.exports.createCourse = async (req, res, next) => {
       res.json({
         message: 'success fully created',
         status: true,
+        id: courseStatus.id,
         courseDetails: {
           ...courseStatus
         }
@@ -233,5 +250,74 @@ module.exports.createCourse = async (req, res, next) => {
       message: 'error occured while creating course! try again later',
       status: false
     })
+  }
+}
+
+// check the course id exist or not while updating a module into an id
+module.exports.productIdValidity = (req, res, next) => {
+  try {
+    // save the course id passed through route
+    const productId = req.params.courseId
+    // check is it the id valid or not
+    Course.findById(productId).then(data => {
+      if (data) {
+        // id is valid.
+        // go ahead to next middleware
+        next()
+      } else {
+        // not valid
+        // send a 404 response
+        res.json({ message: 'wrong course id' })
+      }
+    }).catch(err => {
+      // got some error while checking the validity of id
+      // send the message to frontend
+      if (err) {
+        res.json({ message: 'error while accessing id' })
+      }
+    })
+  } catch {
+    // faced some unexpected error
+    // send the message
+    res.json({ message: 'unexpected error' })
+  }
+}
+
+// to create module
+// save the passed values to the multer and save the files in public folder
+module.exports.saveModule = multer({ storage: moduleStorage }).fields([
+  { name: 'video', maxCount: 1 },
+  { name: 'note', maxCount: 1 },
+  { name: 'question', maxCount: 1 }
+])
+
+// save the files details to data base
+module.exports.createModule = async (req, res, next) => {
+  // get the details passed from frontend
+  const moduleDetails = {
+    videoTitle: req.body.title[0],
+    videoPath: req.files.video[0].path,
+    notePath: req.files.note[0].path,
+    questionPath: req.files.question[0].path
+  }
+
+  // expecting an error while saving the data
+  try {
+    // update or push the data to the modules array of the course
+    const data = await Course.findOneAndUpdate({ id: req.params.courseId }, {
+      $push: {
+        modules: { ...moduleDetails }
+      }
+    })
+
+    // saved the data
+    // send the success message
+    if (data) {
+      res.json({ message: 'successfully added module' })
+    }
+  } catch {
+    // error found while saving data.
+    // send error message
+    res.json({ message: 'error while saveing the module' })
   }
 }

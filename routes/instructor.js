@@ -16,4 +16,11 @@ router.post('/login', instructorController.login)
 // to create course
 router.post('/createCourse', instructorController.upload, instructorController.createCourse)
 
+// to add modules to course
+router.post('/:courseId/module',
+  instructorController.productIdValidity,
+  instructorController.saveModule,
+  instructorController.createModule
+)
+
 module.exports = router
