@@ -338,6 +338,33 @@ module.exports.getCourses = async (req, res, next) => {
   }
 }
 
+// instructor => courses => details
+// to get the details of a course
+module.exports.details = async (req, res, next) => {
+  try {
+    // get the course id from url
+    const id = req.params.courseId
+    if (id) {
+      // retrive course details
+      const product = await Course.findById(id)
+      // check is it exist or not
+      if (product) {
+        // snd the response
+        res.json(product)
+      } else {
+        // sind error message
+        res.json({ message: 'product not found' })
+      }
+    } else {
+      // send error message
+      res.json({ message: 'wrong id' })
+    }
+  } catch {
+    // send error message
+    res.json({ message: 'error while finding details' })
+  }
+}
+
 // delete an entire course
 module.exports.deleteCourse = async (req, res, next) => {
   try {
