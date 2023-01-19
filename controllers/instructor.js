@@ -337,3 +337,23 @@ module.exports.getCourses = async (req, res, next) => {
     res.json({ message: 'error while fetching data' })
   }
 }
+
+// delete an entire course
+module.exports.deleteCourse = async (req, res, next) => {
+  try {
+    // recieve the course id
+    const courseId = req.params.courseId
+
+    // check is it valid id or not
+    const course = await Course.findById(courseId)
+    // send error message if there is no course with given id
+    if (!course) res.json({ message: 'course not exist!', status: false })
+    // delete if ther is course
+    const status = await Course.findByIdAndDelete(courseId)
+    // return success message
+    if (status) res.json({ message: 'successfully deleted', status: true })
+  } catch {
+    // return success message
+    res.json({ message: 'error while deleting the document', status: false })
+  }
+}

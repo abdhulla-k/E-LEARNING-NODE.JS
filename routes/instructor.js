@@ -26,4 +26,7 @@ router.post('/:courseId/module',
 // to get course details
 router.get('/getCourses/:index', instructorController.getCourses)
 
+// to delete an entire course
+router.delete('/delete/:courseId', instructorController.deleteCourse)
+
 module.exports = router
