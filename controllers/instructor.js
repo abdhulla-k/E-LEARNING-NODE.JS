@@ -295,7 +295,7 @@ module.exports.saveModule = multer({ storage: moduleStorage }).fields([
 module.exports.createModule = async (req, res, next) => {
   // get the details passed from frontend
   const moduleDetails = {
-    videoTitle: req.body.title[0],
+    videoTitle: req.body.title,
     videoPath: req.files.video[0].path,
     notePath: req.files.note[0].path,
     questionPath: req.files.question[0].path
@@ -304,7 +304,7 @@ module.exports.createModule = async (req, res, next) => {
   // expecting an error while saving the data
   try {
     // update or push the data to the modules array of the course
-    const data = await Course.findOneAndUpdate({ id: req.params.courseId }, {
+    const data = await Course.findByIdAndUpdate(req.params.courseId, {
       $push: {
         modules: { ...moduleDetails }
       }
@@ -313,7 +313,7 @@ module.exports.createModule = async (req, res, next) => {
     // saved the data
     // send the success message
     if (data) {
-      res.json({ message: 'successfully added module' })
+      res.json({ message: 'successfully added module', courseData: data })
     }
   } catch {
     // error found while saving data.
