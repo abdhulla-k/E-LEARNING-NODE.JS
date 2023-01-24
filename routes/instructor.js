@@ -32,4 +32,6 @@ router.get('/details/:courseId', instructorController.details)
 // to delete an entire course
 router.delete('/delete/:courseId', instructorController.deleteCourse)
 
+router.delete('/deleteModule/:courseId/:moduleId', instructorController.deleteModule)
+
 module.exports = router

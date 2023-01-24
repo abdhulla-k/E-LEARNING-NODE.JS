@@ -389,3 +389,22 @@ module.exports.deleteCourse = async (req, res, next) => {
     res.json({ message: 'error while deleting the document', status: false })
   }
 }
+
+// delete a special module from a course
+module.exports.deleteModule = async (req, res, next) => {
+  // save course id and module id
+  const courseId = req.params.courseId
+  const moduleId = req.params.moduleId
+  // expect an error while updating data
+  try {
+    // remove the module from database
+    const doc = await Course.findByIdAndUpdate(courseId, { $pull: { modules: { _id: moduleId } } }, { new: true })
+    if (doc) {
+      // return the success message
+      res.status(200).send({ message: 'successfully deleted' })
+    }
+  } catch {
+    // return the error message
+    res.status(500).send({ message: 'error while deleting module' })
+  }
+}
