@@ -313,7 +313,12 @@ module.exports.createModule = async (req, res, next) => {
     // saved the data
     // send the success message
     if (data) {
-      res.json({ message: 'successfully added module', courseData: data })
+      // fetch full course data to send to user
+      const fullData = await Course.findById(req.params.courseId)
+      if (fullData) {
+        // send success message
+        res.json({ message: 'successfully added module', courseData: fullData })
+      }
     }
   } catch {
     // error found while saving data.
