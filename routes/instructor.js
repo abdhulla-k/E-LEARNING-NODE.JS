@@ -23,6 +23,13 @@ router.post('/:courseId/module',
   instructorController.createModule
 )
 
+router.post(
+  '/updateModule/:courseId/:moduleId',
+  instructorController.productIdValidity,
+  instructorController.saveModule,
+  instructorController.updateModule
+)
+
 // to get course details
 router.get('/getCourses/:index', instructorController.getCourses)
 

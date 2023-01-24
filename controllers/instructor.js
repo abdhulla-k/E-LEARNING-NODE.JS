@@ -327,6 +327,43 @@ module.exports.createModule = async (req, res, next) => {
   }
 }
 
+// to update module
+module.exports.updateModule = async (req, res, next) => {
+  // save all the data send by user
+  const moduleDetails = {
+    videoTitle: req.body.title,
+    videoPath: req.files.video[0].path,
+    notePath: req.files.note[0].path,
+    questionPath: req.files.question[0].path
+  }
+
+  // query to match while updating the module
+  const query = { _id: req.params.courseId }
+  // data to update
+  const update = {
+    $set: {
+      'modules.$[i].videoTitle': moduleDetails.videoTitle,
+      'modules.$[i].videoPath': moduleDetails.videoPath,
+      'modules.$[i].notePath': moduleDetails.notePath,
+      'modules.$[i].questionPath': moduleDetails.questionPath
+    }
+  }
+  // options that should match
+  const options = { arrayFilters: [{ 'i._id': req.params.moduleId }], new: true }
+  // expect and error while updatin data
+  try {
+    // update the data
+    const data = await Course.findOneAndUpdate(query, update, options)
+    if (data) {
+      // send the success message to user
+      res.status(200).send({ message: 'successfully updated the module' })
+    }
+  } catch {
+    // send error message to user
+    res.status(500).send({ message: 'error while updating module' })
+  }
+}
+
 // send the courses to frontend
 module.exports.getCourses = async (req, res, next) => {
   // expect error while fetching data
