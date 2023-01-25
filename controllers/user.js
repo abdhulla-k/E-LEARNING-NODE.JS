@@ -196,3 +196,21 @@ module.exports.getCourses = async (req, res, next) => {
     res.json({ message: 'error while fetching data' })
   }
 }
+
+module.exports.getCourseDetails = async (req, res, next) => {
+  // save the course id
+  const courseId = req.params.courseId
+  // expect an error
+  try {
+    // get the course data
+    const data = await Course.findById(courseId)
+    // data exist. no errors
+    if (data) {
+      // send the data to user
+      res.status(200).send({ course: data, entrolled: false })
+    }
+  } catch {
+    // error found. send error message
+    res.status(500).send({ message: 'error while geting course details' })
+  }
+}

@@ -17,8 +17,11 @@ router.post('/login', userController.login)
 // /user/verify/:id/:token
 router.get('/verify/:id/:token', userController.verifyEmail)
 
-// to get course details
+// to get courses
 router.get('/getCourses/:index', userController.getCourses)
+
+// to get detatils of a specific course
+router.get('/courses/details/:courseId', userController.getCourseDetails)
 
 // export the router
 module.exports = router
