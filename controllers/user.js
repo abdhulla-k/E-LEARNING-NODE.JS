@@ -2,6 +2,7 @@
 const User = require('../models/users')
 const Token = require('../models/tocken')
 const Course = require('../models/courses')
+const Cart = require('../models/cart')
 
 // import bcrypt
 const bcrypt = require('bcryptjs')
@@ -16,7 +17,7 @@ const emailSend = require('../util/send_email')
 const crypto = require('crypto')
 
 // middleware to act user signup functionality
-exports.signup = (req, res, next) => {
+module.exports.signup = (req, res, next) => {
   // obtain all data user entered in signup form
   const signupData = {
     name: req.body.name,
@@ -101,7 +102,7 @@ exports.signup = (req, res, next) => {
 }
 
 // login middleware
-exports.login = (req, res, next) => {
+module.exports.login = (req, res, next) => {
   const loginData = {
     email: req.body.email,
     password: req.body.password
@@ -148,8 +149,33 @@ exports.login = (req, res, next) => {
     })
 }
 
+// to check and verify jwt token
+module.exports.authorization = async (req, res, next) => {
+  // take the token from string passed from user
+  const token = JSON.parse(req.header('Authorization')).jwtToken
+  if (!token) {
+    res.status(402).send({ message: 'token not exist' })
+  }
+
+  try {
+    // verify the token
+    const verify = await jwt.verify(token, process.env.JWT_SECRET_KEY)
+    // send error if ther is no token
+    if (!verify) {
+      res.status(402).send({ message: 'token not exist' })
+    }
+    // save the user id to req.body
+    req.body.userId = verify.userId
+    // call next middleware
+    next()
+  } catch {
+    // send error message
+    res.status(500).send({ message: 'error while verifying token' })
+  }
+}
+
 // to verify email id
-exports.verifyEmail = async (req, res, next) => {
+module.exports.verifyEmail = async (req, res, next) => {
   // expecting an error while verifying email
   try {
     // get user data with the id provided in link
@@ -197,6 +223,7 @@ module.exports.getCourses = async (req, res, next) => {
   }
 }
 
+// to get the details of a specific course
 module.exports.getCourseDetails = async (req, res, next) => {
   // save the course id
   const courseId = req.params.courseId
@@ -212,5 +239,13 @@ module.exports.getCourseDetails = async (req, res, next) => {
   } catch {
     // error found. send error message
     res.status(500).send({ message: 'error while geting course details' })
+  }
+}
+
+// to add course to user's cart
+// /user/addToCart/
+module.exports.addToCart = async (req, res, next) => {
+  if (req.body.userId) {
+
   }
 }
