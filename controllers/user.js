@@ -319,6 +319,39 @@ module.exports.addToCart = async (req, res, next) => {
   }
 }
 
+// to remove course from cart
+// /user/removeFromCart
+module.exports.removeFromCart = async (req, res, next) => {
+  try {
+    // save user id and course id
+    const userId = req.body.userId
+    const courseId = req.body.courseId
+
+    // find the user's cart
+    const cart = await Cart.findOne({ user: userId })
+    if (!cart) {
+      // return error message
+      return res.status(404).json({ message: 'Cart not found.' })
+    }
+
+    // check if course exists in the user's cart
+    if (!cart.courses.includes(courseId)) {
+      // send error message
+      return res.status(404).json({ message: 'Course not found in cart.' })
+    }
+
+    // remove the course from the user's cart
+    cart.courses = cart.courses.filter(c => c.toString() !== courseId.toString())
+    // save updated cart
+    await cart.save()
+    // send the success message
+    res.status(200).json({ message: 'Course removed from cart.' })
+  } catch (err) {
+    // send error message
+    res.status(500).json({ message: 'Error removing course from cart.' })
+  }
+}
+
 // to add course to user's wishlist
 // /user/addToWishlist
 module.exports.addToWishlist = async (req, res, next) => {

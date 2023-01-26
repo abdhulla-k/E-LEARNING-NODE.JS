@@ -31,6 +31,13 @@ router.post(
   userController.addToCart
 )
 
+// to remove from cart
+router.delete(
+  '/removeFromCart',
+  userController.authorization,
+  userController.removeFromCart
+)
+
 // add to wishlist
 router.post(
   '/addToWishlist',
