@@ -3,6 +3,7 @@ const User = require('../models/users')
 const Token = require('../models/tocken')
 const Course = require('../models/courses')
 const Cart = require('../models/cart')
+const Wishlist = require('../models/wishlist')
 
 const mongoose = require('mongoose')
 
@@ -282,7 +283,7 @@ module.exports.addToCart = async (req, res, next) => {
         console.log(existance)
         if (existance.length) {
           // send the information to user
-          res.status(200).send({ message: 'already exist in cart' })
+          return res.status(400).json({ message: 'Course already exists in Cart.' })
         } else {
           // course not exist in cart. so add to cart
           const data = await Cart.findOneAndUpdate(
@@ -315,5 +316,37 @@ module.exports.addToCart = async (req, res, next) => {
       // send error message
       res.status(500).send({ message: 'error while adding course to cart' })
     }
+  }
+}
+
+// to add course to user's wishlist
+// /user/addToWishlist
+module.exports.addToWishlist = async (req, res, next) => {
+  try {
+    // save user id and courseid
+    const userId = req.body.userId
+    const courseId = req.body.courseId
+
+    // find the user's wishlist
+    let wishlist = await Wishlist.findOne({ user: userId })
+    // create new one if ther is no wishlist
+    if (!wishlist) {
+      wishlist = new Wishlist({ user: userId, courses: [] })
+    }
+
+    // Check if course already exists in the user's wishlist
+    if (wishlist.courses.includes(courseId)) {
+      return res.status(400).json({ message: 'Course already exists in wishlist.' })
+    }
+
+    // Add course to user's wishlist
+    wishlist.courses.push(courseId)
+    await wishlist.save()
+
+    // send success message
+    res.status(201).json({ message: 'Course added to wishlist.' })
+  } catch (err) {
+    // send error message
+    res.status(500).json({ message: 'Error adding course to wishlist.' })
   }
 }

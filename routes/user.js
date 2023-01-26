@@ -24,7 +24,20 @@ router.get('/getCourses/:index', userController.getCourses)
 router.get('/courses/details/:courseId', userController.getCourseDetails)
 
 // to add a course to cart
-router.post('/addToCart', userController.authorization, userController.isCourseExists, userController.addToCart)
+router.post(
+  '/addToCart',
+  userController.authorization,
+  userController.isCourseExists,
+  userController.addToCart
+)
+
+// add to wishlist
+router.post(
+  '/addToWishlist',
+  userController.authorization,
+  userController.isCourseExists,
+  userController.addToWishlist
+)
 
 // export the router
 module.exports = router
