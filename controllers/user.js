@@ -4,6 +4,8 @@ const Token = require('../models/tocken')
 const Course = require('../models/courses')
 const Cart = require('../models/cart')
 
+const mongoose = require('mongoose')
+
 // import bcrypt
 const bcrypt = require('bcryptjs')
 
@@ -242,10 +244,76 @@ module.exports.getCourseDetails = async (req, res, next) => {
   }
 }
 
+// to check is there any existing course with given id
+module.exports.isCourseExists = async (req, res, next) => {
+  // expect an error
+  try {
+    // check the existency of course with given id
+    const data = await Course.findById(req.body.courseId)
+    if (data) {
+      // course exists. go ahead
+      next()
+    } else {
+      // send error message
+      res.status(400).send({ message: 'wrong id' })
+    }
+  } catch {
+    // send error message
+    res.status(500).send({ message: 'unknow error' })
+  }
+}
+
 // to add course to user's cart
 // /user/addToCart/
 module.exports.addToCart = async (req, res, next) => {
   if (req.body.userId) {
+    // expect an error
+    try {
+      // check is ther already a cart array in database
+      const cart = await Cart.find({ userId: req.body.userId })
+      // there is cart. so add to cart
+      if (cart.length) {
+        // check is it already in cart
+        const existance = await Cart.find({
+          userId: req.body.userId,
+          'courses.courseId': mongoose.Types.ObjectId(req.body.courseId)
+        })
 
+        console.log(existance)
+        if (existance.length) {
+          // send the information to user
+          res.status(200).send({ message: 'already exist in cart' })
+        } else {
+          // course not exist in cart. so add to cart
+          const data = await Cart.findOneAndUpdate(
+            { userId: req.body.userId },
+            { $push: { courses: { courseId: req.body.courseId } } }
+          )
+
+          // send success message
+          if (data) {
+            res.status(200).send({ message: 'successfully added!' })
+          }
+        }
+
+        // ther is no cart array
+      } else {
+        // create new cart and add the course to the cart
+        const newCart = new Cart({
+          userId: req.body.userId,
+          courses: [{ courseId: req.body.courseId }]
+        })
+
+        // save createated cart
+        const data = await newCart.save()
+        if (data) {
+          // send success message
+          res.status(200).send({ message: 'successfully added!' })
+        }
+      }
+    } catch {
+      // send error message
+      res.status(500).send({ message: 'error while adding course to cart' })
+    }
   }
 }
