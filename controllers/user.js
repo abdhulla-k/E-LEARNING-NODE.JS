@@ -350,3 +350,33 @@ module.exports.addToWishlist = async (req, res, next) => {
     res.status(500).json({ message: 'Error adding course to wishlist.' })
   }
 }
+
+// to remove from wishlist
+// /user/removeFromWishlist
+module.exports.removeFromWishlist = async (req, res, next) => {
+  try {
+    const userId = req.body.userId
+    const courseId = req.body.courseId
+    // find the user's wishlist
+    const wishlist = await Wishlist.findOne({ user: userId })
+    if (!wishlist) {
+      return res.status(404).json({ message: 'Wishlist not found.' })
+    }
+
+    // check if course exists in the user's wishlist
+    if (!wishlist.courses.includes(courseId)) {
+      // send error message
+      return res.status(404).json({ message: 'Course not found in wishlist.' })
+    }
+
+    // remove the course from the user's wishlist
+    wishlist.courses = wishlist.courses.filter(c => c.toString() !== courseId.toString())
+    // save updated wishlist
+    await wishlist.save()
+    // send the success message
+    res.status(200).json({ message: 'Course removed from wishlist.' })
+  } catch (err) {
+    // send error message
+    res.status(500).json({ message: 'Error removing course from wishlist.' })
+  }
+}

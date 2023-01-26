@@ -39,5 +39,12 @@ router.post(
   userController.addToWishlist
 )
 
+// remove from wishlist
+router.delete(
+  '/removeFromWishlist',
+  userController.authorization,
+  userController.removeFromWishlist
+)
+
 // export the router
 module.exports = router
