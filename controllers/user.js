@@ -1,3 +1,7 @@
+// import inbuild modules
+const fs = require('fs')
+// const path = require('path')
+
 // import models
 const User = require('../models/users')
 const Token = require('../models/tocken')
@@ -411,5 +415,44 @@ module.exports.removeFromWishlist = async (req, res, next) => {
   } catch (err) {
     // send error message
     res.status(500).json({ message: 'Error removing course from wishlist.' })
+  }
+}
+
+// to play a video
+module.exports.playVideo = async (req, res, next) => {
+  try {
+    // get the video name from params
+    const path = `./public/modules/${req.params.name}`
+    // set all required things to streem video
+    const stat = fs.statSync(path)
+    const fileSize = stat.size
+    const range = req.headers.range
+
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-')
+      const start = parseInt(parts[0], 10)
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+
+      const chunksize = (end - start) + 1
+      const file = fs.createReadStream(path, { start, end })
+      const head = {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'video/mp4'
+      }
+
+      res.writeHead(206, head)
+      file.pipe(res)
+    } else {
+      const head = {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/mp4'
+      }
+      res.writeHead(200, head)
+      fs.createReadStream(path).pipe(res)
+    }
+  } catch {
+    res.start(500).json({ message: 'error while playing video' })
   }
 }
