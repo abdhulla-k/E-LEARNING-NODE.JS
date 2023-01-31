@@ -63,5 +63,12 @@ router.get(
   userController.profile
 )
 
+// save user's public profile links
+router.post(
+  '/saveUserLinks',
+  userController.authorization,
+  userController.saveLinks
+)
+
 // export the router
 module.exports = router

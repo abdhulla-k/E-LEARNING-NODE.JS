@@ -126,7 +126,7 @@ module.exports.login = (req, res, next) => {
           if (err) {
             res.status(404).json({ message: 'error found while finding user' })
           } else if (!isMatch) {
-            res.json.status(403)({ message: 'wrong password' })
+            res.status(403).json({ message: 'wrong password' })
           } else {
             if (data.user_verified === true) {
               // create jwt token
@@ -484,4 +484,31 @@ module.exports.profile = async (req, res, next) => {
     // send error message
     res.status(500).json({ status: false, message: 'error while finding user profile' })
   }
+}
+
+// to save the public profile links of user
+// user/saveLinks
+module.exports.saveLinks = async (req, res, next) => {
+  const userId = req.body.userId
+  // save user entered data
+  const userlinks = {
+    linkdIn: req.body.linkdIn,
+    gitHub: req.body.gitHub,
+    twitter: req.body.twitter,
+    instagram: req.body.instagram
+  }
+
+  // update user profile
+  const status = await User.findByIdAndUpdate(userId, { links: userlinks })
+
+  // send the error message if ther is an error when saving the data
+  if (!status) return res.status(500).json({ staus: false, message: 'error while saving the data' })
+
+  const userData = await User.findById(userId)
+  if (!userData) return res.status(500).json({ status: false, message: 'error while getting data back' })
+  // send the data and success message
+  res.status(200).json({
+    status: true,
+    userDetails: userData.links
+  })
 }
