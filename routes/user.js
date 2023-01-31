@@ -23,6 +23,13 @@ router.get('/getCourses/:index', userController.getCourses)
 // to get detatils of a specific course
 router.get('/courses/details/:courseId', userController.getCourseDetails)
 
+// to get all cart data
+router.get(
+  '/getCart',
+  userController.authorization,
+  userController.getCart
+)
+
 // to add a course to cart
 router.post(
   '/addToCart',

@@ -284,6 +284,17 @@ module.exports.isCourseExists = async (req, res, next) => {
   }
 }
 
+// to get all cart details
+module.exports.getCart = async (req, res, next) => {
+  // find cart
+  const cartData = await Cart.findOne({ userId: req.body.userId })
+  // send error message
+  if (!cartData) return res.status(404).json({ status: false, message: 'cart not found' })
+
+  // send success message and data
+  res.staus(200).json({ status: true, data: cartData })
+}
+
 // to add course to user's cart
 // /user/addToCart/
 module.exports.addToCart = async (req, res, next) => {
