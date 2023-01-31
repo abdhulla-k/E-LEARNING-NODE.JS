@@ -53,6 +53,7 @@ router.delete(
   userController.removeFromWishlist
 )
 
+// to play videos
 router.get('/playVideo/:name', userController.playVideo)
 
 // export the router

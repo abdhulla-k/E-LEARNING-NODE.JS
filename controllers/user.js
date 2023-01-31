@@ -123,9 +123,9 @@ module.exports.login = (req, res, next) => {
         data.password,
         (err, isMatch) => {
           if (err) {
-            res.json({ message: 'error found while finding user' })
+            res.status(404).json({ message: 'error found while finding user' })
           } else if (!isMatch) {
-            res.json({ message: 'wrong password' })
+            res.json.status(403)({ message: 'wrong password' })
           } else {
             if (data.user_verified === true) {
               // create jwt token
@@ -137,21 +137,21 @@ module.exports.login = (req, res, next) => {
 
               // generate token
               const token = jwt.sign(tokenData, jwtSecretKey)
-              res.json({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 10000000 })
+              res.json.status(200)({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 10000000 })
             } else {
-              res.json({ message: 'please verify your email' })
+              res.status(554).json({ message: 'please verify your email' })
             }
           }
         }
       )
     } else {
-      res.json({ message: 'email not exist', loggedIn: false })
+      res.status(554).json({ message: 'email not exist', loggedIn: false })
     }
   })
     .catch(err => {
       if (err) {
         console.log(err)
-        res.json({ message: 'error occured while finding user data', loggedIn: false })
+        res.status(500).json({ message: 'error occured while finding user data', loggedIn: false })
       }
     })
 }
