@@ -70,5 +70,12 @@ router.post(
   userController.saveLinks
 )
 
+router.post(
+  '/saveProfilePic',
+  userController.authorization,
+  userController.saveProfilePic,
+  userController.saveProfilePath
+)
+
 // export the router
 module.exports = router

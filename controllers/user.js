@@ -18,11 +18,26 @@ const bcrypt = require('bcryptjs')
 // import jwt
 const jwt = require('jsonwebtoken')
 
+// import multer
+const multer = require('multer')
+
 // import email facility
 const emailSend = require('../util/send_email')
 
 // import crypto to generate tocken
 const crypto = require('crypto')
+
+// multer location set
+const upload = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/profile/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '_' + req.body.userId + '_' + Date.now() + '.jpg')
+  }
+})
+
+const profilePicStore = multer({ storage: upload })
 
 // middleware to act user signup functionality
 module.exports.signup = (req, res, next) => {
@@ -511,4 +526,26 @@ module.exports.saveLinks = async (req, res, next) => {
     status: true,
     userDetails: userData.links
   })
+}
+
+// to save the profile pic with multer
+module.exports.saveProfilePic = profilePicStore.single('profilePic')
+
+// to save profile path
+// user/saveProfilePic
+module.exports.saveProfilePath = async (req, res, next) => {
+  try {
+    // get user id
+    const userId = req.body.userId
+    // update the imagepath to user data
+    const status = await User.findByIdAndUpdate(userId, { profile_img: req.file.path })
+    // return error message if there any problem while saving the data
+    if (!status) return res.status(500).json({ status: false, message: 'error while saving image path' })
+
+    // send success message if ther is data
+    res.status(200).json({ status: true, message: 'image successfully updated', newPath: req.file.path })
+  } catch {
+    // send error message
+    res.status(500).json({ status: false, message: 'error while uploading data' })
+  }
 }
