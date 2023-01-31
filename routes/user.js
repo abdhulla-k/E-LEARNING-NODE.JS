@@ -56,5 +56,12 @@ router.delete(
 // to play videos
 router.get('/playVideo/:name', userController.playVideo)
 
+// to get user profile data
+router.get(
+  '/userProfile',
+  userController.authorization,
+  userController.profile
+)
+
 // export the router
 module.exports = router

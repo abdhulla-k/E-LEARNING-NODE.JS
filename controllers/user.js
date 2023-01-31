@@ -8,6 +8,7 @@ const Token = require('../models/tocken')
 const Course = require('../models/courses')
 const Cart = require('../models/cart')
 const Wishlist = require('../models/wishlist')
+const EntrolledCourse = require('../models/entrolled-courses')
 
 const mongoose = require('mongoose')
 
@@ -137,7 +138,7 @@ module.exports.login = (req, res, next) => {
 
               // generate token
               const token = jwt.sign(tokenData, jwtSecretKey)
-              res.json.status(200)({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 10000000 })
+              res.status(200).json({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 10000000 })
             } else {
               res.status(554).json({ message: 'please verify your email' })
             }
@@ -454,5 +455,33 @@ module.exports.playVideo = async (req, res, next) => {
     }
   } catch {
     res.start(500).json({ message: 'error while playing video' })
+  }
+}
+
+// to send user profile page data
+module.exports.profile = async (req, res, next) => {
+  // expecting an error when handling database
+  try {
+    // save user id
+    const usersId = req.body.userId
+
+    // get user data from database
+    const userData = await User.findById(usersId)
+
+    // send error message if ther is no user data
+    if (!userData) return res.status(500).json({ status: false, message: 'error while getting user data' })
+
+    // get entrolled courses from database
+    const courses = await EntrolledCourse.findOne({ userId: usersId })
+
+    // send data back
+    res.status(200).json({
+      status: true,
+      userDetails: userData,
+      entrolledCourse: courses === null ? [] : courses.courses
+    })
+  } catch {
+    // send error message
+    res.status(500).json({ status: false, message: 'error while finding user profile' })
   }
 }
