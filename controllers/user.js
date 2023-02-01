@@ -288,7 +288,19 @@ module.exports.isCourseExists = async (req, res, next) => {
 // /user/getCart
 module.exports.getCart = async (req, res, next) => {
   // find cart
-  const cartData = await Cart.findOne({ userId: req.body.userId })
+  // const cartData = await Cart.findOne({ userId: req.body.userId })
+  const cartData = await Cart.aggregate([{
+    $match: { userId: mongoose.Types.ObjectId(req.body.userId) }
+  }, {
+    $unwind: '$courses'
+  }, {
+    $lookup: {
+      from: 'courses',
+      localField: 'courses.courseId',
+      foreignField: '_id',
+      as: 'course_details'
+    }
+  }])
   // send error message
   if (!cartData) return res.status(404).json({ status: false, message: 'cart not found' })
 
