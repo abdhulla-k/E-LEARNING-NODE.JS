@@ -40,7 +40,7 @@ router.post(
 
 // to remove from cart
 router.delete(
-  '/removeFromCart',
+  '/removeFromCart/:courseId',
   userController.authorization,
   userController.removeFromCart
 )

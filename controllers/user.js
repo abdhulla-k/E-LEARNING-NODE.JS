@@ -369,7 +369,7 @@ module.exports.removeFromCart = async (req, res, next) => {
   try {
     // save user id and course id
     const userId = req.body.userId
-    const courseId = req.body.courseId
+    const courseId = req.params.courseId
 
     // find the user's cart
     const cart = await Cart.findOne({ user: userId })
@@ -378,14 +378,8 @@ module.exports.removeFromCart = async (req, res, next) => {
       return res.status(404).json({ message: 'Cart not found.' })
     }
 
-    // check if course exists in the user's cart
-    if (!cart.courses.includes(courseId)) {
-      // send error message
-      return res.status(404).json({ message: 'Course not found in cart.' })
-    }
-
     // remove the course from the user's cart
-    cart.courses = cart.courses.filter(c => c.toString() !== courseId.toString())
+    cart.courses = cart.courses.filter(c => c.courseId.toString() !== mongoose.Types.ObjectId(courseId).toString())
     // save updated cart
     await cart.save()
     // send the success message
