@@ -451,7 +451,7 @@ module.exports.addToWishlist = async (req, res, next) => {
 module.exports.removeFromWishlist = async (req, res, next) => {
   try {
     const userId = req.body.userId
-    const courseId = req.body.courseId
+    const courseId = req.params.courseId
     // find the user's wishlist
     const wishlist = await Wishlist.findOne({ user: userId })
     if (!wishlist) {

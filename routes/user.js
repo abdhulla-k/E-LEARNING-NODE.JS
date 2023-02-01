@@ -62,7 +62,7 @@ router.post(
 
 // remove from wishlist
 router.delete(
-  '/removeFromWishlist',
+  '/removeFromWishlist/:courseId',
   userController.authorization,
   userController.removeFromWishlist
 )
