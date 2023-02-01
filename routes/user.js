@@ -45,6 +45,13 @@ router.delete(
   userController.removeFromCart
 )
 
+// to get all wishlist data
+router.get(
+  '/getWishlists',
+  userController.authorization,
+  userController.getWishlists
+)
+
 // add to wishlist
 router.post(
   '/addToWishlist',

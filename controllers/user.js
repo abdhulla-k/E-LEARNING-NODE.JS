@@ -285,6 +285,7 @@ module.exports.isCourseExists = async (req, res, next) => {
 }
 
 // to get all cart details
+// /user/getCart
 module.exports.getCart = async (req, res, next) => {
   // find cart
   const cartData = await Cart.findOne({ userId: req.body.userId })
@@ -292,7 +293,7 @@ module.exports.getCart = async (req, res, next) => {
   if (!cartData) return res.status(404).json({ status: false, message: 'cart not found' })
 
   // send success message and data
-  res.staus(200).json({ status: true, data: cartData })
+  res.status(200).json({ status: true, data: cartData })
 }
 
 // to add course to user's cart
@@ -381,6 +382,30 @@ module.exports.removeFromCart = async (req, res, next) => {
     // send error message
     res.status(500).json({ message: 'Error removing course from cart.' })
   }
+}
+
+// to get all wishlist
+// /user/getWishlist
+module.exports.getWishlists = async (req, res, next) => {
+  // find wishlist and aggregate course details
+  const wishlist = await Wishlist.aggregate([{
+    $match: { user: mongoose.Types.ObjectId(req.body.userId) }
+  }, {
+    $unwind: '$courses'
+  }, {
+    $lookup: {
+      from: 'courses',
+      localField: 'courses',
+      foreignField: '_id',
+      as: 'course_details'
+    }
+  }])
+
+  // send error message
+  if (!wishlist) return res.status(404).json({ status: false, message: 'wishlist not found' })
+
+  // send success message and data
+  res.status(200).json({ status: true, data: wishlist })
 }
 
 // to add course to user's wishlist
