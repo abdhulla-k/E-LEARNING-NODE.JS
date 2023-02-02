@@ -175,7 +175,7 @@ module.exports.login = (req, res, next) => {
 // to check and verify jwt token
 module.exports.authorization = async (req, res, next) => {
   // take the token from string passed from user
-  const token = JSON.parse(req.header('Authorization')).jwtToken
+  const token = req.header('Authorization')
   if (!token) {
     res.status(402).send({ message: 'token not exist' })
   }
