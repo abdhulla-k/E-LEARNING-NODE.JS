@@ -45,6 +45,13 @@ router.delete(
   userController.removeFromCart
 )
 
+// to place order. buy entire cart
+router.get(
+  '/placeCartOrder',
+  userController.authorization,
+  userController.placeCartOrder
+)
+
 // to get all wishlist data
 router.get(
   '/getWishlists',

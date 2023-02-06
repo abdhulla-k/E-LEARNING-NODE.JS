@@ -12,6 +12,9 @@ const EntrolledCourse = require('../models/entrolled-courses')
 
 const mongoose = require('mongoose')
 
+// import stripe
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+
 // import bcrypt
 const bcrypt = require('bcryptjs')
 
@@ -387,6 +390,66 @@ module.exports.removeFromCart = async (req, res, next) => {
   } catch (err) {
     // send error message
     res.status(500).json({ message: 'Error removing course from cart.' })
+  }
+}
+
+// to checkout cart and place order
+// /user/placeCartOrder
+module.exports.placeCartOrder = async (req, res, next) => {
+  try {
+    // save user data
+    const userId = req.body.userId
+
+    // get cart data
+    const cartData = await Cart.aggregate([{
+      $match: { userId: mongoose.Types.ObjectId(userId) }
+    }, {
+      $unwind: '$courses'
+    }, {
+      $lookup: {
+        from: 'courses',
+        localField: 'courses.courseId',
+        foreignField: '_id',
+        as: 'course_details'
+      }
+    }])
+
+    // create a token and add the token with the url to verify payment
+    const tokenData = {
+      cartId: cartData[0]._id,
+      userId: req.body.userId
+    }
+
+    // create jwt token
+    const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY)
+
+    // send error message if token creation failed
+    if (!token) return res.status(500).json({ message: 'unknown error! please try later' })
+
+    // create stripe session and give all required data
+    const session = await stripe.checkout.sessions.create({
+      line_items: cartData[0].course_details.map((item) => {
+        return {
+          price_data: {
+            currency: 'inr',
+            product_data: {
+              name: item.title
+            },
+            unit_amount: item.price * 100
+          },
+          quantity: 1
+        }
+      }),
+      mode: 'payment',
+      success_url: `${process.env.FRONTENT_USER_BASE_URL}payment/verify?token=${token}`,
+      cancel_url: `${process.env.FRONTENT_USER_BASE_URL}myCart`
+    })
+
+    // send success message
+    res.status(200).json({ session })
+  } catch {
+    // send error message
+    res.status(500).json({ message: 'process failed! please try later' })
   }
 }
 
