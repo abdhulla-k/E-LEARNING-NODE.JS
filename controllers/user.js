@@ -518,6 +518,40 @@ module.exports.verifyOrder = async (req, res, next) => {
   }
 }
 
+// to get enrolled courses
+// /user/enrolledCourses
+module.exports.getEnrolledCourses = async (req, res, next) => {
+  // expect an array while handling database
+  try {
+    // get user id
+    const userId = req.body.userId
+    // retrive course details
+    const enrolledCourses = await EntrolledCourse.aggregate([{
+      $match: {
+        userId: mongoose.Types.ObjectId(userId)
+      }
+    }, {
+      $unwind: '$courses'
+    }, {
+      $lookup: {
+        from: 'courses',
+        localField: 'courses.courseId',
+        foreignField: '_id',
+        as: 'course_details'
+      }
+    }])
+
+    // return data to user
+    res.status(200).json({ status: true, courses: enrolledCourses })
+  } catch {
+    // return error message
+    res.status(500).json({
+      status: false,
+      message: 'error while getting enrolled course! please try later or make sure you already enrolled in any course'
+    })
+  }
+}
+
 // to get all wishlist
 // /user/getWishlist
 module.exports.getWishlists = async (req, res, next) => {
@@ -639,7 +673,7 @@ module.exports.playVideo = async (req, res, next) => {
       fs.createReadStream(path).pipe(res)
     }
   } catch {
-    res.start(500).json({ message: 'error while playing video' })
+    res.status(500).json({ message: 'error while playing video' })
   }
 }
 

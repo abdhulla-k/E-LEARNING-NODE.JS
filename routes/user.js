@@ -59,6 +59,13 @@ router.post(
   userController.verifyOrder
 )
 
+// to get enrolled courses
+router.get(
+  '/enrolledCourses',
+  userController.authorization,
+  userController.getEnrolledCourses
+)
+
 // to get all wishlist data
 router.get(
   '/getWishlists',
