@@ -641,19 +641,23 @@ module.exports.removeFromWishlist = async (req, res, next) => {
 // to play a video
 module.exports.playVideo = async (req, res, next) => {
   try {
-    // get the video name from params
-    const path = `./ public / modules / ${req.params.name}`
+    // get the video name from params and set the path
+    const path = `./public/modules/${req.params.name}`
     // set all required things to streem video
+    // retrieve information about the file
     const stat = fs.statSync(path)
     const fileSize = stat.size
+    // set range variable. header is used to specify the range of bytes of the video file to be returned in the response.
     const range = req.headers.range
 
     if (range) {
+      // splits the range string into an array of two parts using the split method.
       const parts = range.replace(/bytes=/, '').split('-')
       const start = parseInt(parts[0], 10)
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
 
       const chunksize = (end - start) + 1
+      // create a read stream from the file using the fs.createReadStream method
       const file = fs.createReadStream(path, { start, end })
       const head = {
         'Content-Range': `bytes ${start} - ${end} / ${fileSize}`,
