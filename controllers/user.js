@@ -88,9 +88,7 @@ module.exports.signup = (req, res, next) => {
                     token: crypto.randomBytes(32).toString('hex')
                   })
                   token.save().then(data => {
-                    console.log(data)
                     // send account verification email
-                    console.log('start')
                     emailSend(
                       createdData.email,
                       'successfully created your account.please verify',
@@ -453,6 +451,73 @@ module.exports.placeCartOrder = async (req, res, next) => {
   }
 }
 
+// to verify order
+// /user/payment/verify
+module.exports.verifyOrder = async (req, res, next) => {
+  try {
+    // save token
+    const token = req.body.token
+
+    // verify token and get the data from the token.
+    // there is userId and cart id in this token
+    const verify = await jwt.verify(token, process.env.JWT_SECRET_KEY)
+
+    // return error message if token wrongg
+    if (!verify) return res.status(404).json({ status: false, message: 'wrong token!' })
+
+    // make sure the userId from authorization token and verification token is same
+    if (!req.body.userId === token.userId) return res.status()
+
+    // get cart data
+    const cart = await Cart.findById(verify.cartId)
+    // send error response
+    if (!cart) return res.staus(404).json({ status: false, message: 'cart not found' })
+
+    // save course to entrolled courses
+    // first find the course and check is null or not
+    const entrolledCourse = await EntrolledCourse.findOne({ userId: mongoose.Types.ObjectId(req.body.userId) })
+
+    // if it is null. then create new collection
+    if (entrolledCourse === null) {
+      const newEntrolle = new EntrolledCourse({
+        userId: req.body.userId,
+        courses: [...cart.courses]
+      })
+      await newEntrolle.save()
+      // update if ther is existing collection
+    } else {
+      entrolledCourse.courses = [...entrolledCourse.courses, ...cart.courses]
+      await entrolledCourse.save()
+    }
+
+    // delete cart
+    const cartDelete = await Cart.findByIdAndDelete(verify.cartId)
+    if (!cartDelete) return res.status(404).json({ status: false, message: 'cart not exist' })
+
+    // send success message
+    res.status(200).json({ status: true, message: 'order verifyed' })
+  } catch {
+    // find user data
+    const userData = await User.findById(req.body.userId)
+
+    try {
+      // send email
+      const status = await emailSend(
+        userData.email,
+        'successfully created your account.please verify',
+        `${process.env.FRONTENT_USER_BASE_URL}payment/verify?token=${req.body.token})`
+      )
+      // return message
+      if (!status.status) return res.status(500).json({ status: false, message: 'unknow error while verifying order! please contact us.' })
+    } catch {
+      // send error message
+      return res.status(500).json({ status: false, message: 'unknow error while verifying order! please contact us.' })
+    }
+    // send error message
+    res.status(500).json({ status: false, message: 'unknow error while verifying order! check your email to verify it' })
+  }
+}
+
 // to get all wishlist
 // /user/getWishlist
 module.exports.getWishlists = async (req, res, next) => {
@@ -543,7 +608,7 @@ module.exports.removeFromWishlist = async (req, res, next) => {
 module.exports.playVideo = async (req, res, next) => {
   try {
     // get the video name from params
-    const path = `./public/modules/${req.params.name}`
+    const path = `./ public / modules / ${req.params.name}`
     // set all required things to streem video
     const stat = fs.statSync(path)
     const fileSize = stat.size
@@ -557,7 +622,7 @@ module.exports.playVideo = async (req, res, next) => {
       const chunksize = (end - start) + 1
       const file = fs.createReadStream(path, { start, end })
       const head = {
-        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Content-Range': `bytes ${start} - ${end} / ${fileSize}`,
         'Accept-Ranges': 'bytes',
         'Content-Length': chunksize,
         'Content-Type': 'video/mp4'

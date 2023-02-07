@@ -52,6 +52,13 @@ router.get(
   userController.placeCartOrder
 )
 
+// to verify order
+router.post(
+  '/payment/verify',
+  userController.authorization,
+  userController.verifyOrder
+)
+
 // to get all wishlist data
 router.get(
   '/getWishlists',
