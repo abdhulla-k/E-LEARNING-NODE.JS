@@ -6,6 +6,11 @@ const courseSchema = new Schema({
   courseId: {
     type: mongoose.Types.ObjectId,
     required: true
+  },
+  date: {
+    type: Date,
+    required: true,
+    default: Date.now
   }
 })
 
