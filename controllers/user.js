@@ -44,133 +44,138 @@ const profilePicStore = multer({ storage: upload })
 
 // middleware to act user signup functionality
 module.exports.signup = (req, res, next) => {
-  // obtain all data user entered in signup form
-  const signupData = {
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    confirmPassword: req.body.confirmPassword
-  }
-
-  // set salt round to bcrypt the password
-  const saltRound = 10
-
-  // check is it exist or not
-  User.find({
-    email: signupData.email
-  }, (err, data) => {
-    if (err) {
-      console.log(err)
-    } else {
-      // save user if it is not exist in database
-      if (data.length === 0) {
-        // bcrypt the password
-        bcrypt.genSalt(saltRound, (saltError, salt) => {
-          if (saltError) {
-            throw saltError
-          } else {
-            bcrypt.hash(signupData.password, salt, (hashError, hash) => {
-              if (hashError) {
-                throw hashError
-              } else {
-                // create User object or document
-                const user = new User({
-                  name: signupData.name,
-                  email: signupData.email,
-                  password: hash,
-                  user_verified: false
-                })
-                // save user data
-                user.save().then(createdData => {
-                  // create a tocken and save it in tocken collection to verify email.
-                  const token = new Token({
-                    userId: createdData.id,
-                    token: crypto.randomBytes(32).toString('hex')
-                  })
-                  token.save().then(data => {
-                    // send account verification email
-                    emailSend(
-                      createdData.email,
-                      'successfully created your account.please verify',
-                      `${process.env.BASE_URL}${createdData.id}/${token.token}`)
-                      .then(status => {
-                        // send response
-                        res.json({
-                          status: 200,
-                          message: 'account successfully created. please verify your account'
-                        })
-                      })
-                      .catch(err => {
-                        if (err) {
-                          res.json({ message: 'problem faced while creating tocken. please use resend email!' })
-                        }
-                      })
-                  })
-                })
-                  .catch(err => {
-                    // handling error
-                    if (err) {
-                      res.json({ message: 'problem faced while saving data' })
-                    }
-                  })
-              }
-            })
-          }
-        })
-      } else {
-        // send response
-        res.json({ status: 409, message: 'email already exists' })
-      }
+  try {
+    // obtain all data user entered in signup form
+    const signupData = {
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      confirmPassword: req.body.confirmPassword
     }
-  })
+
+    // set salt round to bcrypt the password
+    const saltRound = 10
+
+    // check is it exist or not
+    User.find({
+      email: signupData.email
+    }, (err, data) => {
+      if (err) {
+        console.log(err)
+      } else {
+        // save user if it is not exist in database
+        if (data.length === 0) {
+          // bcrypt the password
+          bcrypt.genSalt(saltRound, (saltError, salt) => {
+            if (saltError) {
+              throw saltError
+            } else {
+              bcrypt.hash(signupData.password, salt, (hashError, hash) => {
+                if (hashError) {
+                  throw hashError
+                } else {
+                  // create User object or document
+                  const user = new User({
+                    name: signupData.name,
+                    email: signupData.email,
+                    password: hash,
+                    user_verified: false
+                  })
+                  // save user data
+                  user.save().then(createdData => {
+                    // create a tocken and save it in tocken collection to verify email.
+                    const token = new Token({
+                      userId: createdData.id,
+                      token: crypto.randomBytes(32).toString('hex')
+                    })
+                    token.save().then(data => {
+                      // send account verification email
+                      emailSend(
+                        createdData.email,
+                        'successfully created your account.please verify',
+                        `${process.env.BASE_URL}${createdData.id}/${token.token}`)
+                        .then(status => {
+                          // send response
+                          res.status(200).json({ status: false, message: 'account successfully created. please verify your account' })
+                        })
+                        .catch(err => {
+                          if (err) {
+                            res.status(500).json({ status: false, message: 'problem faced while creating tocken. please use resend email!' })
+                          }
+                        })
+                    })
+                  })
+                    .catch(err => {
+                      // handling error
+                      if (err) {
+                        res.status(500).json({ status: false, message: 'problem faced while saving data' })
+                      }
+                    })
+                }
+              })
+            }
+          })
+        } else {
+          // send response
+          res.status(500).json({ status: false, message: 'email already exists' })
+        }
+      }
+    })
+  } catch {
+    res.status(500).json({ status: false, message: 'unknow error' })
+  }
 }
 
 // login middleware
 module.exports.login = (req, res, next) => {
-  const loginData = {
-    email: req.body.email,
-    password: req.body.password
-  }
+  try {
+    const loginData = {
+      email: req.body.email,
+      password: req.body.password
+    }
 
-  User.findOne({ email: loginData.email }).then(data => {
-    if (data) {
-      // compare password if a user exist with the given email
-      bcrypt.compare(
-        loginData.password,
-        data.password,
-        (err, isMatch) => {
-          if (err) {
-            res.status(404).json({ message: 'error found while finding user' })
-          } else if (!isMatch) {
-            res.status(403).json({ message: 'wrong password' })
-          } else {
-            if (data.user_verified === true) {
-              // create jwt token
-              const jwtSecretKey = process.env.JWT_SECRET_KEY
-              const tokenData = {
-                time: Date(),
-                userId: data.id
-              }
-
-              // generate token
-              const token = jwt.sign(tokenData, jwtSecretKey)
-              res.status(200).json({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 10000000 })
+    User.findOne({ email: loginData.email }).then(data => {
+      if (data) {
+        // compare password if a user exist with the given email
+        bcrypt.compare(
+          loginData.password,
+          data.password,
+          (err, isMatch) => {
+            if (err) {
+              res.status(404).json({ message: 'error found while finding user' })
+            } else if (!isMatch) {
+              res.status(403).json({ message: 'wrong password' })
             } else {
-              res.status(554).json({ message: 'please verify your email' })
+              if (data.user_verified === true) {
+                // create jwt token
+                const jwtSecretKey = process.env.JWT_SECRET_KEY
+                const tokenData = {
+                  time: Date(),
+                  userId: data.id
+                }
+
+                // generate token
+                const token = jwt.sign(tokenData, jwtSecretKey)
+                res.status(200).json({ jwtToken: token, message: 'user logged in', loggedIn: true, time: 10000000 })
+              } else {
+                res.status(554).json({ message: 'please verify your email' })
+              }
             }
           }
-        }
-      )
-    } else {
-      res.status(554).json({ message: 'email not exist', loggedIn: false })
-    }
-  })
-    .catch(err => {
-      if (err) {
-        console.log(err)
-        res.status(500).json({ message: 'error occured while finding user data', loggedIn: false })
+        )
+      } else {
+        res.status(554).json({ message: 'email not exist', loggedIn: false })
       }
     })
+      .catch(err => {
+        if (err) {
+          console.log(err)
+          res.status(500).json({ message: 'error occured while finding user data', loggedIn: false })
+        }
+      })
+  } catch {
+    res.status(500).json({ message: 'error occured while finding user data', loggedIn: false })
+  }
 }
 
 // to check and verify jwt token
