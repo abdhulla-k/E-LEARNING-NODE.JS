@@ -48,11 +48,14 @@ app.use('/user', userRoutes) // users related routes
 app.use('/instructor', instructorRoutes)
 
 // connect with database
-mongoose.connect('mongodb://localhost:27017/newApplication').then(data => {
-  console.log('connected')
+mongoose.connect(
+  `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}.fojetus.mongodb.net/?retryWrites=true&w=majority`
+)
+  .then(data => {
+    console.log('connected')
 
-  // make it listenable
-  app.listen(3000)
-}).catch(err => {
-  console.log(err)
-})
+    // make it listenable
+    app.listen(3000)
+  }).catch(err => {
+    console.log(err)
+  })
