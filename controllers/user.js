@@ -557,6 +557,19 @@ module.exports.getEnrolledCourses = async (req, res, next) => {
   }
 }
 
+// to rate course
+// /user/rateCourse/courseId/starCount
+// module.exports.rateCourse = async (req, res, next) => {
+//   // save courseid and star count
+//   const courseId = req.params.courseId
+//   const starCount = req.params.starCount
+
+//   // return error message if user send the number greater than 5
+//   if (starCount > 5) return res.status(400).json({ message: 'star should be less then 6' })
+//   // save the data in course
+//   Course.findOne({_id: mongoose.Types})
+// }
+
 // to get all wishlist
 // /user/getWishlist
 module.exports.getWishlists = async (req, res, next) => {

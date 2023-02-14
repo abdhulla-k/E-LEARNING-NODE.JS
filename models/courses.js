@@ -42,6 +42,26 @@ const courseSchema = new Schema({
     type: Number,
     required: true
   },
+  ratedUsers: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  totalStar: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  rating: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  category: {
+    type: String,
+    default: 'untitled',
+    required: true
+  },
   teacher: {
     type: String,
     required: true
