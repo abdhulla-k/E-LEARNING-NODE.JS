@@ -9,6 +9,9 @@ const userController = require('../controllers/user')
 // /user/signup
 router.post('/signup', userController.signup)
 
+// to verify otp
+router.post('/verifyOtp', userController.verifyOtp)
+
 // user login route
 // /user/login
 router.post('/login', userController.login)

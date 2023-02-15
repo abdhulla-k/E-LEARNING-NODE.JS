@@ -24,8 +24,12 @@ const jwt = require('jsonwebtoken')
 // import multer
 const multer = require('multer')
 
+// import util files
 // import email facility
 const emailSend = require('../util/send_email')
+
+// import generate otp function
+const generateOtp = require('../util/generate_otp')
 
 // import crypto to generate tocken
 const crypto = require('crypto')
@@ -88,15 +92,26 @@ module.exports.signup = (req, res, next) => {
                       userId: createdData.id,
                       token: crypto.randomBytes(32).toString('hex')
                     })
-                    token.save().then(data => {
+                    token.save().then(async (data) => {
+                      // generate otp
+                      const otp = await generateOtp()
+                      req.session.otp = otp
+                      setTimeout(() => {
+                        req.session.otp = null
+                      }, 60 * 1000)
+
                       // send account verification email
                       emailSend(
                         createdData.email,
-                        'successfully created your account.please verify',
-                        `${process.env.BASE_URL}${createdData.id}/${token.token}`)
+                        'successfully created your account.please verify by clicking this below link or entering otp',
+                        `${process.env.BASE_URL}${createdData.id}/${token.token}           \n your otp is: ${otp}`)
                         .then(status => {
                           // send response
-                          res.status(200).json({ status: false, message: 'account successfully created. please verify your account' })
+                          res.status(200).json({
+                            status: false,
+                            message: 'account successfully created. please verify your account',
+                            userId: data.userId
+                          })
                         })
                         .catch(err => {
                           if (err) {
@@ -123,6 +138,28 @@ module.exports.signup = (req, res, next) => {
     })
   } catch {
     res.status(500).json({ status: false, message: 'unknow error' })
+  }
+}
+
+// verify otp
+// /user/verifyOtp
+module.exports.verifyOtp = async (req, res, next) => {
+  try {
+    const userId = req.body.userId
+    const otp = req.body.otp
+
+    // find user with the id
+    const user = await User.findOne({ _id: mongoose.Types.ObjectId(userId) })
+    if (!user) return res.status(400).send({ message: 'user not exist with provided id' })
+    if (parseInt(req.session.otp) === parseInt(otp)) {
+      user.user_verified = true
+      const savedUser = await user.save()
+      if (savedUser) res.status(200).json({ message: 'successfully verifyed' })
+    } else {
+      res.status(400).json({ message: 'wrong otp' })
+    }
+  } catch {
+    res.status(500).json({ message: 'error found while verifying otp! please try later' })
   }
 }
 

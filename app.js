@@ -13,11 +13,22 @@ const dotenv = require('dotenv')
 // import jwt
 // const jwt = require('jsonwebtoken')
 
+// import session
+const session = require('express-session')
+
 // import mongoose
 const mongoose = require('mongoose')
 
 // create the instance of expresslibrary
 const app = express()
+
+// use express session
+app.use(session({
+  secret: 'key',
+  saveUninitialized: true,
+  resave: false,
+  cookie: { maxAge: 60000000000 }
+}))
 
 // Set up Global configuration access for dotenv
 dotenv.config()
