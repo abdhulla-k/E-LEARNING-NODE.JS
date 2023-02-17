@@ -11,6 +11,11 @@ const courseSchema = new Schema({
     type: Date,
     required: true,
     default: Date.now
+  },
+  star: {
+    type: Number,
+    required: true,
+    default: 0
   }
 })
 

@@ -592,16 +592,44 @@ module.exports.getEnrolledCourses = async (req, res, next) => {
 
 // to rate course
 // /user/rateCourse/courseId/starCount
-// module.exports.rateCourse = async (req, res, next) => {
-//   // save courseid and star count
-//   const courseId = req.params.courseId
-//   const starCount = req.params.starCount
+module.exports.rateCourse = async (req, res, next) => {
+  try {
+    // save courseid and star count
+    const courseId = req.params.courseId
+    const starCount = req.params.starCount
 
-//   // return error message if user send the number greater than 5
-//   if (starCount > 5) return res.status(400).json({ message: 'star should be less then 6' })
-//   // save the data in course
-//   Course.findOne({_id: mongoose.Types})
-// }
+    // return error message if user send the number greater than 5
+    if (starCount > 5 || starCount < 0) return res.status(400).json({ message: 'star should be less then 6' })
+    // save the data in course
+    const course = Course.findOne({ _id: mongoose.Types.ObjectId(courseId) })
+
+    // add rating data in database
+    course.totalStar += starCount
+    course.ratedUsers++
+    course.rating = course.totalStar / course.ratedUsers
+
+    // save new data
+    const data = await course.save()
+
+    // send error message to user if there is no saved data
+    if (!data) res.status(500).json({ status: 500, message: 'error while updating data' })
+
+    // save star in enrolled course
+    await EntrolledCourse.updateOne(
+      {
+        userId: mongoose.Types.ObjectId(courseId),
+        'courses.courseId': mongoose.Types.ObjectId(courseId)
+      },
+      { $set: { 'courses.$.star': starCount } }
+    )
+
+    // send success message
+    res.status(200).json({ status: 200, message: 'success', data })
+  } catch {
+    // return error message
+    res.status(500).json({ status: 500, message: 'error while rating course' })
+  }
+}
 
 // to get all wishlist
 // /user/getWishlist
