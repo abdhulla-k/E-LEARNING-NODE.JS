@@ -10,6 +10,9 @@ const cors = require('cors')
 // import dotenv
 const dotenv = require('dotenv')
 
+// import morgen
+const morgan = require('morgan')
+
 // import jwt
 // const jwt = require('jsonwebtoken')
 
@@ -21,6 +24,9 @@ const mongoose = require('mongoose')
 
 // create the instance of expresslibrary
 const app = express()
+
+// use morgen
+app.use(morgan('tiny'))
 
 // use express session
 app.use(session({

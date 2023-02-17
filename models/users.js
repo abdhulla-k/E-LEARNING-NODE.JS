@@ -47,6 +47,10 @@ const userSchema = new Schema({
     type: linksSchema,
     required: false,
     default: {}
+  },
+  otp: {
+    type: Number,
+    required: true
   }
 })
 

@@ -74,16 +74,19 @@ module.exports.signup = (req, res, next) => {
             if (saltError) {
               throw saltError
             } else {
-              bcrypt.hash(signupData.password, salt, (hashError, hash) => {
+              bcrypt.hash(signupData.password, salt, async (hashError, hash) => {
                 if (hashError) {
                   throw hashError
                 } else {
+                  // generate otp
+                  const otp = await generateOtp()
                   // create User object or document
                   const user = new User({
                     name: signupData.name,
                     email: signupData.email,
                     password: hash,
-                    user_verified: false
+                    user_verified: false,
+                    otp: otp
                   })
                   // save user data
                   user.save().then(createdData => {
@@ -92,14 +95,7 @@ module.exports.signup = (req, res, next) => {
                       userId: createdData.id,
                       token: crypto.randomBytes(32).toString('hex')
                     })
-                    token.save().then(async (data) => {
-                      // generate otp
-                      const otp = await generateOtp()
-                      req.session.otp = otp
-                      setTimeout(() => {
-                        req.session.otp = null
-                      }, 60 * 1000)
-
+                    token.save().then((data) => {
                       // send account verification email
                       emailSend(
                         createdData.email,
@@ -151,7 +147,7 @@ module.exports.verifyOtp = async (req, res, next) => {
     // find user with the id
     const user = await User.findOne({ _id: mongoose.Types.ObjectId(userId) })
     if (!user) return res.status(400).send({ message: 'user not exist with provided id' })
-    if (parseInt(req.session.otp) === parseInt(otp)) {
+    if (parseInt(user.otp) === parseInt(otp)) {
       user.user_verified = true
       const savedUser = await user.save()
       if (savedUser) res.status(200).json({ message: 'successfully verifyed' })
@@ -485,7 +481,7 @@ module.exports.placeCartOrder = async (req, res, next) => {
       cancel_url: `${process.env.FRONTENT_USER_BASE_URL}myCart`
     })
 
-    // send success message
+    // send success messageuc
     res.status(200).json({ session })
   } catch {
     // send error message
