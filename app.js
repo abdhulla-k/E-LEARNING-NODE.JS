@@ -48,8 +48,9 @@ app.use('/user', userRoutes) // users related routes
 app.use('/instructor', instructorRoutes)
 
 // connect with database
+mongoose.set('strictQuery', false)
 mongoose.connect(
-  `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}.fojetus.mongodb.net/?retryWrites=true&w=majority`
+  'mongodb+srv://Abdhulla_K:OQ0ZRgli20eGqKGI@cluster0.fojetus.mongodb.net/?retryWrites=true&w=majority'
 )
   .then(data => {
     console.log('connected')
